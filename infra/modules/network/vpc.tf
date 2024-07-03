@@ -17,13 +17,3 @@ resource "aws_internet_gateway" "main" {
     Name = "${var.resource_name_prefix}-vpc"
   }
 }
-
-resource "aws_subnet" "transitgw" {
-  for_each = { for k, v in var.transitgw_subnets : k => v }
-  vpc_id   = aws_vpc.main.id
-
-  cidr_block        = each.value.cidr_block
-  availability_zone = each.value.availability_zone
-
-  tags = each.value.tags
-}
