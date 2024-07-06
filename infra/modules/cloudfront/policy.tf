@@ -10,37 +10,30 @@ data "aws_cloudfront_cache_policy" "caching_disabled" {
   name = "Managed-CachingDisabled"
 }
 
-# resource "aws_cloudfront_cache_policy" "default" {
-#   name        = "${var.service_name}-default-${var.env_short_name}"
-#   comment     = "デフォルトキャッシュポリシー"
-#   # CloudFront側ではデフォルトでキャッシュしない
-#   default_ttl = 0
-#   max_ttl     = 31536000
-#   min_ttl     = 0
-
-#   parameters_in_cache_key_and_forwarded_to_origin {
-#     cookies_config {
-#       cookie_behavior = "whitelist"
-#       cookies {
-#         items = []
-#       }
-#     }
-#     headers_config {
-#       header_behavior = "whitelist"
-#       headers {
-#         items = []
-#       }
-#     }
-#     query_strings_config {
-#       query_string_behavior = "allExcept"
-#       query_strings {
-#         items = concat()
-#       }
-#     }
-#     enable_accept_encoding_brotli = true
-#     enable_accept_encoding_gzip   = true
-#   }
-# }
+resource "aws_cloudfront_cache_policy" "alb-default" {
+  name        = "${var.service_name}-alb-default-${var.env_short_name}"
+  comment     = "default"
+  default_ttl = 60
+  max_ttl     = 31536000
+  min_ttl     = 0
+  parameters_in_cache_key_and_forwarded_to_origin {
+    enable_accept_encoding_brotli = true
+    enable_accept_encoding_gzip   = true
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      # ALB や nginx 側のアクセスログを見る際に、接続元がわかるようにヘッダーを転送したい。未検証ではあるので後で確認。
+      header_behavior = "whitelist"
+      headers {
+        items = ["Origin"]
+      }
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
 
 resource "aws_cloudfront_cache_policy" "static" {
   name        = "common-${var.service_name}-static-short-${var.env_short_name}"

@@ -23,5 +23,5 @@ output "ecs_security_group_module" {
 }
 
 output "alb_dns_name" {
-  value = resource.aws_lb.app.dns_name
+  value = resource.aws_route53_record.main.fqdn
 }

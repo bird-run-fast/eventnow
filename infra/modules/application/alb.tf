@@ -89,3 +89,24 @@ resource "aws_lb_listener" "app2" {
     }
   }
 }
+
+#----------------------------------------
+# ALB Route53 Record
+#----------------------------------------
+
+data "aws_route53_zone" "main" {
+  name         = "00615.engineed-exam.com"
+  private_zone = false
+}
+
+resource "aws_route53_record" "main" {
+  zone_id = data.aws_route53_zone.main.id
+  name    = "alb-${var.role}"
+  type    = "A"
+
+  alias {
+    name                   = resource.aws_lb.app.dns_name
+    zone_id                = resource.aws_lb.app.zone_id
+    evaluate_target_health = false
+  }
+}

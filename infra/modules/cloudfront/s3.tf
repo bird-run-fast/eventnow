@@ -42,5 +42,6 @@ resource "aws_s3_bucket_policy" "assets" {
   policy = templatefile("./bucket_policy.json.tpl", {
     bucket_name    = "${var.bucket_name}",
     cloudfront_arn = resource.aws_cloudfront_distribution.static_00615_engineed_exam_com.arn
+    vpc_endpoint_name = "vpce-026efb2f8df520e31"
   })
 }

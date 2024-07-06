@@ -25,7 +25,7 @@ resource "aws_cloudfront_distribution" "static_00615_engineed_exam_com" {
   # Origin: App
   origin {
     domain_name              = var.app_alb_origin_domain_name
-    origin_id                = "app-alb"
+    origin_id                = "alb-app"
     origin_access_control_id = null
     origin_path              = null
     connection_attempts      = "3"
@@ -43,7 +43,7 @@ resource "aws_cloudfront_distribution" "static_00615_engineed_exam_com" {
   # Origin: Admin
   origin {
     domain_name              = var.admin_alb_origin_domain_name
-    origin_id                = "admin-alb"
+    origin_id                = "alb-admin"
     origin_access_control_id = null
     origin_path              = null
     connection_attempts      = "3"
@@ -70,29 +70,27 @@ resource "aws_cloudfront_distribution" "static_00615_engineed_exam_com" {
   # Behavior: App (デフォルト)
   default_cache_behavior {
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id    
+    cache_policy_id            = aws_cloudfront_cache_policy.alb-default.id    
     cached_methods         = ["GET", "HEAD"]
     compress               = "true"
-    default_ttl            = "60"
-    max_ttl                = "60"
-    min_ttl                = "60"
     smooth_streaming       = "false"
-    target_origin_id       = "app-alb"
+    target_origin_id       = "alb-app"
     viewer_protocol_policy = "redirect-to-https"
   }
 
   # Behavior: Admin
   ordered_cache_behavior {
     allowed_methods            =  ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id
+    cache_policy_id            = aws_cloudfront_cache_policy.alb-default.id
     cached_methods             = ["GET", "HEAD"]
     compress                   = true
     field_level_encryption_id  = null
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all_viewer_and_cloudfront.id
-    path_pattern               = "/admin/*"
+    # path_pattern               = "/admin/*" mock site なので /admin/* という切られ方してなかった。
+    path_pattern               = "/admin"
     realtime_log_config_arn    = null
     smooth_streaming           = false
-    target_origin_id           = "admin-alb"
+    target_origin_id           = "alb-admin"
     trusted_key_groups         = []
     trusted_signers            = []
     viewer_protocol_policy     = "redirect-to-https"
@@ -126,3 +124,23 @@ resource "aws_cloudfront_distribution" "static_00615_engineed_exam_com" {
   }
 }
 
+#----------------------------------------
+# ALB Route53 Record
+#----------------------------------------
+
+data "aws_route53_zone" "main" {
+  name         = "00615.engineed-exam.com"
+  private_zone = false
+}
+
+resource "aws_route53_record" "main" {
+  zone_id = data.aws_route53_zone.main.id
+  name    = data.aws_route53_zone.main.name
+  type    = "A"
+
+  alias {
+    name                   = resource.aws_cloudfront_distribution.static_00615_engineed_exam_com.domain_name
+    zone_id                = resource.aws_cloudfront_distribution.static_00615_engineed_exam_com.hosted_zone_id
+    evaluate_target_health = false
+  }
+}

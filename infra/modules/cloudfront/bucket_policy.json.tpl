@@ -18,6 +18,21 @@
           "AWS:SourceArn": "${cloudfront_arn}"
         }
       }
+    },
+    {
+      "Sid": "AllowAccessFromSpecificVpcEndpoint",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::${bucket_name}",
+        "arn:aws:s3:::${bucket_name}/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceVpce": "${vpc_endpoint_name}"
+        }
+      }
     }
   ]
 }
