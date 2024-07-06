@@ -47,3 +47,8 @@ variable "admin_alb_origin_domain_name" {
   type = string
 }
 
+variable "web_acl_id" {
+  description = "web_acl_id"
+  type = string
+}
+

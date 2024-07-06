@@ -40,4 +40,6 @@ inputs = {
     
     app_alb_origin_domain_name = dependency.app.outputs.alb_dns_name
     admin_alb_origin_domain_name = dependency.admin.outputs.alb_dns_name
+    #TODO: 後で dependency 経由で受け取るようにする
+    web_acl_id = "arn:aws:wafv2:us-east-1:992382664063:global/webacl/eventnow-prd/a5b950a8-b46c-4393-a66b-35f2a869f489"
 }

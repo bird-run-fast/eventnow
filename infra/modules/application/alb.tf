@@ -4,25 +4,34 @@
 
 module "alb-sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "4.9.0"
+  version = "5.1.2"
 
   use_name_prefix = false
 
   name   = "alb-${var.service_name}-${var.role}-${var.env_short_name}"
   vpc_id = var.vpc_id
 
+  # NOTE: 
+  # cloudfront の prefix list を許可しようとする場合
+  # 作業前提として、quota: `Inbound or outbound rules per security group` の上限緩和申請が必要
+  ingress_prefix_list_ids = [
+    "pl-58a04531" # cloudfront の マネージドプレフィックスリスト
+  ] 
+
   ingress_with_cidr_blocks = [
     {
       from_port   = 443
       to_port     = 443
       protocol    = "tcp"
-      cidr_blocks = var.ingress_cidr_blocks
+      use_name_prefix = "pl-58a04531" # cloudfront の マネージドプレフィックスリスト
+      description = "Allow from cloudfront"
     },
     {
       from_port   = 80
       to_port     = 80
       protocol    = "tcp"
-      cidr_blocks = var.ingress_cidr_blocks
+      use_name_prefix = "pl-58a04531" # cloudfront の マネージドプレフィックスリスト
+      description = "Allow from cloudfront"
     }
   ]
 
